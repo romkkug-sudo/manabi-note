@@ -53,6 +53,10 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
 .unit:active{background:rgba(216,53,42,.06)}
 .unit.soon{color:var(--muted);cursor:default}
 .unit .done{color:var(--red);font-size:15px;font-family:"Zen Maru Gothic";font-weight:700}
+.lv{flex:none;font-family:"Zen Maru Gothic";font-size:12px;font-weight:700;border-radius:99px;padding:2px 8px;border:1.5px solid}
+.lv1{color:#2F8F6B;border-color:#9FD3BC;background:#EEF8F2}
+.lv2{color:#B5651D;border-color:#E6C08F;background:#FDF4E7}
+.lv3{color:#B03A2E;border-color:#E9A79F;background:#FCEDEB}
 
 /* ---- work ---- */
 #work{flex-direction:column}
@@ -119,10 +123,50 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
 .btn{height:52px;padding:0 24px;border-radius:14px;font-size:18px;font-weight:700;border:1.5px solid var(--line2);background:#fff}
 .btn.pri{background:var(--green);color:#fff;border-color:var(--green)}
 
+/* reading */
+#reading{position:absolute;inset:0;padding:14px 26px 90px;overflow:hidden;display:none}
+.paper.read{background-image:none}
+.rtitle{display:flex;align-items:baseline;gap:10px;margin:0 0 4px}
+.rtitle h2{margin:0;font-family:"Klee One",serif;font-size:24px;font-weight:600}
+#passage{--fs:19px;--lh:34px;font-family:"Klee One",serif;font-size:var(--fs);line-height:var(--lh);background-image:linear-gradient(transparent calc(var(--lh) - 1px),var(--line) var(--lh));background-size:100% var(--lh)}
+#passage p{margin:0;text-indent:0}
+.pno{display:inline-block;width:26px;color:var(--red);font-family:"Zen Maru Gothic";font-size:15px;font-weight:700}
+.s{border-radius:4px;transition:background .3s}
+.s.evi{background:rgba(255,206,84,.6)}
+.s.sel{background:rgba(43,108,176,.18);box-shadow:0 0 0 2px rgba(43,108,176,.5)}
+.picking .s{cursor:pointer}
+.picking .s:active{background:rgba(43,108,176,.12)}
+.para.flash{animation:flash 1.6s ease-in-out}
+@keyframes flash{0%,100%{background:transparent}30%,70%{background:rgba(255,206,84,.35)}}
+.writebox{display:none;margin-top:10px;height:110px;border:2px dashed #C9921E;border-radius:12px;position:relative}
+.writebox span{position:absolute;left:10px;top:6px;font-size:13px;color:#A8740A}
+#readPad{display:none;flex-direction:column;gap:12px}
+#mathPad{display:flex;flex-direction:column;gap:12px}
+#mathPad>*,#readPad>*{flex:none}
+.rqhead{font-size:14px;color:var(--sub);font-weight:700}
+.rq{font-family:"Klee One",serif;font-size:19px;line-height:1.6}
+.choice{width:100%;text-align:left;display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:2px solid var(--line2);border-radius:12px;background:#fff;font-family:"Klee One",serif;font-size:17px;line-height:1.5;margin-bottom:8px}
+.choice .k{flex:none;width:26px;height:26px;border-radius:50%;background:#F6EEDD;display:flex;align-items:center;justify-content:center;font-size:15px}
+.choice.on{border-color:var(--blue);background:#EEF4FB}
+.choice.on .k{background:var(--blue);color:#fff}
+.pickbox{border:2px dashed var(--blue);border-radius:12px;padding:10px 12px;font-family:"Klee One",serif;font-size:16px;line-height:1.6;color:var(--blue);background:#F4F8FC}
+.note{font-size:14px;color:var(--sub);line-height:1.6}
+.explain,.model,.points{border-radius:12px;padding:10px 12px;font-size:16px;line-height:1.7;font-family:"Klee One",serif}
+.explain{background:#FFF3D6;color:#5C3D00}
+.model{background:var(--greenbg);color:#1F5A43}
+.points{background:#fff;border:1px solid var(--line2)}
+.points ul{margin:4px 0 0;padding-left:20px}
+.explain b,.model b,.points b{display:block;font-family:"Zen Maru Gothic";font-size:13px}
+.selfrow{display:flex;gap:8px}
+.selfrow button{flex:1;height:50px;border-radius:12px;font-size:17px;font-weight:700;border:1.5px solid var(--line2);background:#fff}
+.selfrow .ok{background:var(--red);border-color:var(--red);color:#fff}
+.nextq{height:50px;border-radius:14px;background:var(--red);color:#fff;font-size:18px;font-weight:700}
 @media (max-width:900px), (orientation:portrait){
   .main{flex-direction:column}
-  .pad{width:auto;border-left:none;border-top:1px solid var(--line2);display:grid;grid-template-columns:1fr 1fr;align-items:start;max-height:46vh}
-  .pad .keys{grid-row:span 4}
+  .pad{width:auto;border-left:none;border-top:1px solid var(--line2);max-height:42vh}
+  #mathPad{display:grid;grid-template-columns:1fr 1fr;align-items:start;gap:12px}
+  #mathPad .keys{grid-row:span 4}
+  #reading{padding-bottom:84px}
   .steps{display:none}
 }
 </style>
@@ -160,12 +204,18 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
   <div class="main">
     <div class="paper" id="paper">
       <svg id="fig"></svg>
+      <div id="reading">
+        <div class="rtitle"><h2 id="rTitle"></h2><span class="chip" id="rKind"></span></div>
+        <div id="passage"></div>
+        <div class="writebox" id="writebox"><span>ここに こたえを 書こう</span></div>
+      </div>
       <canvas id="cv"></canvas>
       <div class="qtext" id="qtext"></div>
       <div class="tools" id="tools">
         <button class="tool on" data-tool="pen" data-color="#2F2B27" aria-label="えんぴつ"><span class="sw" style="background:#2F2B27"></span></button>
         <button class="tool" data-tool="pen" data-color="#2B6CB0" aria-label="青ペン"><span class="sw" style="background:#2B6CB0"></span></button>
         <button class="tool" data-tool="pen" data-color="#D8352A" aria-label="赤ペン"><span class="sw" style="background:#D8352A"></span></button>
+        <button class="tool" data-tool="pick" id="pickTool" style="display:none" aria-label="文をえらぶ"><svg viewBox="0 0 24 24" fill="none" stroke="#2B6CB0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V4.5a1.5 1.5 0 0 1 3 0V12"/><path d="M11 11.5v-2a1.5 1.5 0 0 1 3 0V12"/><path d="M14 10.5a1.5 1.5 0 0 1 3 0V12"/><path d="M17 11.5a1.5 1.5 0 0 1 3 0V16a6 6 0 0 1-6 6h-2a6 6 0 0 1-5-2.7L4.3 15.5a1.6 1.6 0 0 1 2.5-2L8 15"/></svg></button>
         <span class="sep"></span>
         <button class="tool" data-tool="eraser" aria-label="けしゴム"><svg viewBox="0 0 24 24" fill="none" stroke="#5F574D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 20H8.5l-4.2-4.3a1 1 0 0 1 0-1.4l9.8-9.8a1 1 0 0 1 1.4 0l5 5a1 1 0 0 1 0 1.4L13 20"/><path d="M8 11l6 6"/></svg></button>
         <button class="tool" id="undo" aria-label="ひとつもどす"><svg viewBox="0 0 24 24" fill="none" stroke="#5F574D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
@@ -180,6 +230,7 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
       </div>
     </div>
     <aside class="pad">
+     <div id="mathPad">
       <h3>こたえ</h3>
       <div class="answer" id="answer"></div>
       <div class="keys" id="keys"></div>
@@ -188,6 +239,17 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
       <div id="hintBox"></div>
       <div class="msg" id="msg"></div>
       <div class="steps" id="steps"><b>ひっ算の じゅんばん</b><br>① たてる　② かける<br>③ ひく　　④ おろす</div>
+     </div>
+     <div id="readPad">
+      <div class="rqhead" id="rqNo"></div>
+      <div class="rq" id="rqText"></div>
+      <div id="rqBody"></div>
+      <button class="check" id="rCheck">こたえあわせ</button>
+      <button class="hintbtn" id="rHint">ヒント 1 を見る</button>
+      <div id="rHintBox"></div>
+      <div class="msg" id="rMsg"></div>
+      <div id="rExplain"></div>
+     </div>
     </aside>
   </div>
 </section>
@@ -200,7 +262,7 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
     <div id="resMsg" style="font-size:17px;color:var(--sub)"></div>
     <div class="row">
       <button class="btn" onclick="openToc()">もくじへ</button>
-      <button class="btn pri" onclick="startUnit(state.unit)">もういちど</button>
+      <button class="btn pri" onclick="restart()">もういちど</button>
     </div>
   </div>
 </section>
@@ -261,12 +323,12 @@ var UNITS = {
 
 var TOC = [
   { subject:'さんすう', color:'#2F8F6B', units:['div1','div1r','div2','rect','lshape'] },
-  { subject:'こくご', color:'#B5651D', soon:['4年生の かん字'] },
+  { subject:'こくご', color:'#B5651D', reads:['tamago','story','tonari','nawatobi','dango','expl','hige','tane'], soon:['4年生の かん字'] },
   { subject:'えいご', color:'#2B6CB0', soon:['アルファベット', 'たんご'] }
 ];
 
 /* ---------- 画面切りかえ ---------- */
-var state = { grade: saved.grade || 4, unit:null, list:[], idx:0, results:[], tries:0, field:0, vals:['',''] };
+var state = { grade: saved.grade || 4, mode:'math', total:5, rkey:null, onNext:null, unit:null, list:[], idx:0, results:[], tries:0, field:0, vals:['',''] };
 
 function go(id){
   document.querySelectorAll('.screen').forEach(function(s){ s.classList.toggle('show', s.id === id); });
@@ -304,6 +366,15 @@ function openToc(){
       b.onclick = function(){ startUnit(key); };
       box.appendChild(b);
     });
+    (sec.reads || []).forEach(function(key){
+      var r = READS[key], b = document.createElement('button'); b.className = 'unit';
+      var best = saved.best['read_' + key];
+      b.innerHTML = '<span>読解：' + r.kind + '「' + r.title + '」</span>' + levelChip(r) + '<span class="lead"></span>' +
+        (best != null ? '<span class="done">はなまる ' + best + '/' + r.qs.length + '</span>' : '') +
+        '<span class="no">p.' + (no++) + '</span>';
+      b.onclick = function(){ startReading(key); };
+      box.appendChild(b);
+    });
     (sec.soon || []).forEach(function(name){
       var b = document.createElement('div'); b.className = 'unit soon';
       b.innerHTML = '<span>' + name + '</span><span class="lead"></span><span class="no">じゅんびちゅう</span>';
@@ -315,7 +386,8 @@ function openToc(){
 
 /* ---------- 問題ページ ---------- */
 function startUnit(key){
-  state.unit = key; state.idx = 0; state.results = []; state.list = [];
+  state.unit = key; state.idx = 0; state.results = []; state.list = []; state.total = SET_SIZE;
+  setMode('math');
   var seen = {};
   while (state.list.length < SET_SIZE){
     var p = UNITS[key].gen(), sig = JSON.stringify(p);
@@ -332,7 +404,7 @@ function cur(){ return state.list[state.idx]; }
 function showProblem(){
   var p = cur(), kind = UNITS[state.unit].kind;
   state.tries = 0; state.vals = ['','']; state.field = 0; state.hints = 0;
-  document.getElementById('hintBox').innerHTML = ''; updateHintBtn();
+  document.getElementById('hintBox').innerHTML = ''; document.getElementById('hintBtn').classList.remove('nudge'); updateHintBtn();
   strokes = []; redraw();
   document.getElementById('msg').textContent = ''; document.getElementById('msg').className = 'msg';
   document.getElementById('maru').classList.remove('show');
@@ -354,7 +426,7 @@ function showProblem(){
 
 function renderDots(){
   var box = document.getElementById('dots'); box.innerHTML = '';
-  for (var i=0; i<SET_SIZE; i++){
+  for (var i=0; i<state.total; i++){
     var d = document.createElement('i');
     if (i < state.results.length) d.className = state.results[i] ? 'ok' : 'ng';
     else if (i === state.idx) d.className = 'now';
@@ -376,7 +448,9 @@ function cellText(svg, col, row, ch){
 }
 function drawDivision(p){
   var svg = document.getElementById('fig'); svg.innerHTML = '';
-  var ds = String(p.b), vs = String(p.a), r0 = 3, c0 = 2;
+  var ds = String(p.b), vs = String(p.a), r0 = 4;
+  var cols = Math.floor((document.getElementById('paper').clientWidth || 600) / CELL);
+  var c0 = Math.max(1, Math.floor((cols - ds.length - vs.length) / 2) - 1);
   for (var i=0; i<ds.length; i++) cellText(svg, c0+i, r0, ds[i]);
   var cd = c0 + ds.length;
   for (var j=0; j<vs.length; j++) cellText(svg, cd+j, r0, vs[j]);
@@ -449,7 +523,7 @@ function check(){
   state.tries++;
   if (ok){
     if (state.results.length === state.idx) state.results.push(state.tries === 1);
-    showMaru(state.tries === 1 ? 'よくできました！' : 'できたね！');
+    showMaru(state.tries === 1 ? 'よくできました！' : 'できたね！', 'つぎへ', nextProblem);
   } else {
     msg.className = 'msg ng';
     msg.innerHTML = 'おしい！ もういちど 見なおしてみよう。';
@@ -524,8 +598,10 @@ function maruPath(){
     d += 'L' + (r*Math.cos(a)).toFixed(1) + ',' + (r*Math.sin(a)).toFixed(1); }
   return d;
 }
-function showMaru(text){
+function showMaru(text, label, onNext){
   renderDots();
+  state.onNext = onNext;
+  document.getElementById('nextBtn').textContent = label;
   document.getElementById('maruText').textContent = text;
   var ov = document.getElementById('maru'); ov.classList.add('show');
   var path = document.getElementById('maruPath');
@@ -540,13 +616,15 @@ function nextProblem(){
   if (state.idx >= SET_SIZE){ finish(); return; }
   showProblem();
 }
+function restart(){ if (state.mode === 'read') startReading(state.rkey); else startUnit(state.unit); }
 function finish(){
-  var n = state.results.filter(Boolean).length;
-  var prev = saved.best[state.unit];
-  if (prev == null || n > prev){ saved.best[state.unit] = n; save(); }
-  document.getElementById('score').textContent = n + ' / ' + SET_SIZE;
+  var n = state.results.filter(Boolean).length, T = state.total;
+  var key = state.mode === 'read' ? 'read_' + state.rkey : state.unit;
+  var prev = saved.best[key];
+  if (prev == null || n > prev){ saved.best[key] = n; save(); }
+  document.getElementById('score').textContent = n + ' / ' + T;
   document.getElementById('resMsg').textContent =
-    n === SET_SIZE ? 'ぜんぶ はなまる！ すごい！' : n >= 3 ? 'いい ちょうし！ もう少しで ぜんぶ はなまる' : 'つぎは もっと はなまるを ふやそう';
+    n === T ? 'ぜんぶ はなまる！ すごい！' : n >= T - 2 ? 'いい ちょうし！ もう少しで ぜんぶ はなまる' : 'つぎは もっと はなまるを ふやそう';
   go('result');
 }
 
@@ -560,7 +638,9 @@ function resizeCanvas(){
   if (!r.width) return;
   cv.width = Math.round(r.width*dpr); cv.height = Math.round(r.height*dpr);
   ctx.setTransform(dpr,0,0,dpr,0,0);
+  if (state.mode === 'read') fitPassage();
   redraw();
+  if (state.mode === 'math' && state.unit && UNITS[state.unit].kind === 'div' && document.getElementById('work').classList.contains('show')) drawDivision(cur());
 }
 if (window.ResizeObserver) new ResizeObserver(resizeCanvas).observe(document.getElementById('paper'));
 window.addEventListener('resize', resizeCanvas);
@@ -614,18 +694,490 @@ cv.addEventListener('pointerup', endStroke);
 cv.addEventListener('pointercancel', endStroke);
 document.addEventListener('touchmove', function(e){ if (e.target === cv) e.preventDefault(); }, { passive:false });
 
+function selectTool(b){
+  document.querySelectorAll('#tools .tool[data-tool]').forEach(function(x){ x.classList.remove('on'); });
+  b.classList.add('on');
+  tool = { tool: b.dataset.tool, color: b.dataset.color || '#000' };
+  var picking = tool.tool === 'pick';
+  cv.style.pointerEvents = picking ? 'none' : '';
+  document.getElementById('passage').classList.toggle('picking', picking);
+}
 document.querySelectorAll('#tools .tool[data-tool]').forEach(function(b){
-  b.onclick = function(){
-    document.querySelectorAll('#tools .tool[data-tool]').forEach(function(x){ x.classList.remove('on'); });
-    b.classList.add('on');
-    tool = { tool: b.dataset.tool, color: b.dataset.color || '#000' };
-  };
+  b.onclick = function(){ selectTool(b); };
 });
 document.getElementById('undo').onclick = function(){ strokes.pop(); redraw(); };
 document.getElementById('clearAll').onclick = function(){ strokes = []; redraw(); };
 document.getElementById('checkBtn').onclick = check;
 document.getElementById('hintBtn').onclick = showHint;
-document.getElementById('nextBtn').onclick = nextProblem;
+document.getElementById('nextBtn').onclick = function(){ if (state.onNext) state.onNext(); };
+
+/* ---------- 国語：読解 ---------- */
+var NUMS = ['①','②','③','④','⑤','⑥','⑦','⑧'];
+var KANA = ['ア','イ','ウ','エ'];
+var READS = {
+  story: {
+    title: 'さいごの一本', kind: '物語文', level: 'ふつう',
+    paras: [
+      ['試合のこり三秒。', 'スコアは二十四対二十五で、ぼくたちのチームが一点負けていた。', 'シュートを打とうとしたとき、相手の手がぼくのうでに当たり、ふえが鳴った。', 'フリースローが二本もらえることになった。'],
+      ['ぼくはフリースローがにがてだ。', 'ラインに立つと、体育館がしんと静かになった。', 'ボールを持つ手がつめたくて、少しふるえている。', '一本目のシュートは、リングの手前に当たって外れた。', 'ベンチから「あぁ」という声が聞こえた。'],
+      ['下を向いていると、キャプテンのそうたくんがかたをたたいた。', '「ゆうき、いつもの練習と同じでいいよ。」', 'その言葉を聞いて、ぼくは毎朝の練習を思い出した。', '学校に行く前、公園のゴールで二十本ずつ打ってきたのだ。'],
+      ['ぼくは大きく息をすって、ボールを三回ついた。', '練習のときと同じリズムだ。', 'ふしぎと、手のふるえが止まっていた。', 'ひざを曲げて、ゆっくりとボールをはなした。'],
+      ['ボールはきれいな線をえがいて、ネットにすいこまれた。', '二十五対二十五。', '同点だ。', '試合終了のブザーが鳴ると、ベンチのみんながかけよってきた。', 'ぼくは、つめたかった手が、いつの間にかあたたかくなっているのに気がついた。']
+    ],
+    qs: [
+      { type:'choice', q:'一本目のシュートを打つとき、ゆうきはどんな気持ちでしたか。',
+        choices:['自信があって、わくわくしていた。','きんちょうして、不安だった。','つかれて、早く帰りたかった。','相手チームにおこっていた。'], ans:1,
+        paras:[1], evi:['p1s2'],
+        hints:['②のだん落を 読んでみよう。', '「手」のようすを 書いた文を さがしてみよう。気持ちは 体のようすに 出ることが あるよ。'],
+        explain:'②に「ボールを持つ手がつめたくて、少しふるえている」と書いてあるね。手がふるえるのは、きんちょうしているしょうこだよ。' },
+      { type:'pick', q:'ゆうきが毎朝していた練習が書かれている文を、文章から ぬき出しましょう。',
+        ans:['p2s3'], paras:[2], evi:['p2s3'],
+        hints:['③のだん落を 読んでみよう。', '「毎朝の練習を思い出した」の すぐあとの文に 注目しよう。'],
+        explain:'「学校に行く前、公園のゴールで二十本ずつ打ってきた」が、毎朝の練習の中身だね。' },
+      { type:'choice', q:'ゆうきの手のふるえが止まったのは、なぜですか。',
+        choices:['一本目のシュートが入ったから。','体育館がしずかになったから。','そうたくんの言葉で、いつもの練習を思い出したから。','試合が終わったから。'], ans:2,
+        paras:[2,3], evi:['p2s1','p2s2','p3s2'],
+        hints:['③と④のだん落を 読んでみよう。', '「その言葉を聞いて」の「その言葉」は、だれの どんな言葉かな。'],
+        explain:'そうたくんの「いつもの練習と同じでいいよ」を聞いて、毎朝の練習を思い出したね。そのあと「手のふるえが止まっていた」とあるよ。' },
+      { type:'write', q:'さいごの文「つめたかった手が、いつの間にかあたたかくなっている」から、ゆうきの気持ちが どう変わったと分かりますか。',
+        model:'きんちょうして不安だった気持ちが、シュートが入ってほっとした（うれしい）気持ちに変わった。',
+        points:['はじめの気持ち（きんちょう・不安）が書けている','あとの気持ち（ほっとした・うれしい）が書けている'],
+        paras:[1,4], evi:['p1s2','p4s4'],
+        hints:['②の「手がつめたくて」と、⑤のさいごの文を くらべてみよう。', '「〇〇な気持ちが、△△な気持ちに変わった。」の形で 書いてみよう。'] }
+    ]
+  },
+  expl: {
+    title: 'ドリブルのひみつ', kind: '説明文', level: 'ふつう',
+    paras: [
+      ['バスケットボールでは、ボールを持ったまま三歩以上歩くことはできません。', 'そこで、ボールをゆかについて進む「ドリブル」が大切になります。', 'では、上手なドリブルには、どんなひみつがあるのでしょうか。'],
+      ['一つ目のひみつは、手のひらではなく、指先でボールをあつかうことです。', '指先を使うと、ボールの向きや強さを細かく調整できます。', 'そのため、ボールが思った場所にもどってきやすくなるのです。'],
+      ['二つ目のひみつは、顔を上げることです。', 'ボールばかり見ていると、まわりの味方や相手が見えません。', '顔を上げていれば、パスを出す相手を見つけたり、ぶつかるのをさけたりできます。'],
+      ['三つ目のひみつは、ボールを低くつくことです。', 'ボールが高くはね上がると、相手に取られやすくなります。', 'こしを落として低くつけば、ボールが手にもどるまでの時間が短くなり、取られにくくなります。'],
+      ['このように、上手なドリブルは、指先・目・高さの三つの工夫からできています。', '毎日少しずつ練習すれば、だれでもドリブルが上手になれるのです。']
+    ],
+    qs: [
+      { type:'choice', q:'この文章には、上手なドリブルの ひみつが いくつ書かれていますか。',
+        choices:['二つ','三つ','四つ','五つ'], ans:1,
+        paras:[1,2,3], evi:['p1s0','p2s0','p3s0','p4s0'],
+        hints:['②③④のだん落の 書き出しを 見てみよう。', '「一つ目」「二つ目」…という言葉を さがしてみよう。'],
+        explain:'「一つ目」「二つ目」「三つ目」と じゅん番に 書かれているね。⑤でも「三つの工夫」と まとめているよ。' },
+      { type:'pick', q:'顔を上げると、どんなよいことがありますか。それが書かれている文を ぬき出しましょう。',
+        ans:['p2s2'], paras:[2], evi:['p2s2'],
+        hints:['③のだん落を 読んでみよう。', '「顔を上げていれば」で 始まる文に 注目しよう。'],
+        explain:'「顔を上げていれば、パスを出す相手を見つけたり、ぶつかるのをさけたりできます」が、顔を上げるよいことだね。' },
+      { type:'choice', q:'ボールを低くつくと 取られにくくなるのは、なぜですか。',
+        choices:['ボールが重くなるから。','相手からボールが見えなくなるから。','指先を使わなくてよいから。','ボールが手にもどるまでの時間が短くなるから。'], ans:3,
+        paras:[3], evi:['p3s2'],
+        hints:['④のだん落を 読んでみよう。', '「取られにくく」という言葉の 前の部分を 読んでみよう。'],
+        explain:'④に「ボールが手にもどるまでの時間が短くなり、取られにくくなります」と書いてあるね。' },
+      { type:'write', q:'筆者が この文章で いちばん伝えたいことは 何ですか。',
+        model:'上手なドリブルは、指先・目・高さの三つの工夫からできていて、毎日練習すれば だれでも上手になれるということ。',
+        points:['三つの工夫（指先・目・高さ）に ふれている','練習すれば 上手になれることが 書けている'],
+        paras:[4], evi:['p4s0','p4s1'],
+        hints:['さいごの⑤のだん落を 読んでみよう。', '「このように」は、まとめの 合図だよ。そのあとの文を 使って書こう。'] }
+    ]
+  },
+
+  /* ===== 物語文 ===== */
+  tamago: {
+    title: 'はじめての たまごやき', kind: '物語文', level: 'やさしい',
+    paras: [
+      ['日曜日の朝、わたしはおばあちゃんの家にいた。', '「今日は、たまごやきを作ってみようか。」とおばあちゃんが言った。', 'わたしはうれしくて、大きくうなずいた。'],
+      ['ボウルにたまごを二つわって、はしでよくまぜた。', 'フライパンにたまごを流すと、じゅうっといい音がした。', 'ところが、くるくるまこうとしたら、たまごがやぶれてしまった。', 'わたしは「もうやめる。」と言って、はしをおいた。'],
+      ['おばあちゃんはにこにこしながら、「やぶれても大じょうぶ。上からまた流せば、くっつくのよ。」と言った。', 'わたしはもう一度、はしを持った。', '言われたとおりにたまごを流すと、やぶれたところがちゃんとくっついた。'],
+      ['できあがったたまごやきは、少しこげていて、形もでこぼこだった。', 'でも、おじいちゃんは一口食べて、「うまい。」と言ってくれた。', 'わたしは、むねのあたりがぽかぽかした。', '「来週も作りたい。」とわたしは言った。']
+    ],
+    qs: [
+      { type:'choice', q:'たまごが やぶれたとき、「わたし」は どうしましたか。',
+        choices:['おばあちゃんに 作ってもらった。','「もうやめる。」と言って、はしを おいた。','新しい たまごを わった。','だまって 作りつづけた。'], ans:1,
+        paras:[1], evi:['p1s3'],
+        hints:['②のだん落を 読んでみよう。', '「やぶれてしまった」の すぐあとの文を 見てみよう。'],
+        explain:'②に「『もうやめる。』と言って、はしをおいた」と書いてあるね。うまくいかなくて、がっかりしたんだね。' },
+      { type:'pick', q:'おばあちゃんが 教えてくれた、やぶれたときの なおし方が 書かれている文を ぬき出しましょう。',
+        ans:['p2s0'], paras:[2], evi:['p2s0'],
+        hints:['③のだん落を 読んでみよう。', 'おばあちゃんが 話した 言葉を さがそう。'],
+        explain:'おばあちゃんの「上からまた流せば、くっつくのよ。」が、なおし方だね。' },
+      { type:'choice', q:'「わたし」が もう一度 はしを 持ったのは、なぜですか。',
+        choices:['おじいちゃんに おこられたから。','おなかが すいていたから。','おばあちゃんが「大じょうぶ」と 教えてくれたから。','たまごが まだ たくさん あったから。'], ans:2,
+        paras:[2], evi:['p2s0','p2s1'],
+        hints:['③のだん落を 読んでみよう。', 'はしを 持つ すぐ前に、だれが 何と 言ったかな。'],
+        explain:'おばあちゃんが「やぶれても大じょうぶ。」と 言ってくれたので、もう一度 やってみようと 思えたんだね。' },
+      { type:'write', q:'さいごに「来週も作りたい。」と 言ったとき、「わたし」は どんな 気持ちだったと 思いますか。',
+        model:'おじいちゃんに「うまい。」と 言ってもらえて うれしかったので、また 作ってみたいという 気持ち。',
+        points:['うれしい（ぽかぽかした）気持ちが 書けている','そのわけ（おじいちゃんの「うまい。」）が 書けている'],
+        paras:[3], evi:['p3s1','p3s2'],
+        hints:['④のだん落を 読んでみよう。', '「むねのあたりがぽかぽかした」は、どんな 気持ちを あらわしているかな。'] }
+    ]
+  },
+  tonari: {
+    title: 'となりの席の あおいさん', kind: '物語文', level: 'ふつう',
+    paras: [
+      ['四月、ぼくのとなりの席に、転校生のあおいさんがやって来た。', 'あおいさんは、休み時間になっても、いつも一人で本を読んでいた。', 'ぼくは話しかけたかったけれど、何を言えばいいのか分からなかった。'],
+      ['ある日の算数の時間、あおいさんがふでばこの中を何度もさがしていた。', '消しゴムをわすれたらしい。', 'ぼくは少しまよってから、自分の消しゴムを半分に切った。', 'そして、だまってあおいさんのつくえにおいた。'],
+      ['あおいさんはおどろいた顔でぼくを見て、小さな声で「ありがとう。」と言った。', 'ぼくは顔が赤くなって、前を向いたまま「うん。」とだけ答えた。'],
+      ['次の日の朝、ぼくのつくえの上に、小さな紙がおいてあった。', '「きのうは ありがとう。いっしょに 図書室に 行かない？」', 'あおいさんの字だった。', 'その日の休み時間、ぼくたちはならんで図書室へ歩いていった。']
+    ],
+    qs: [
+      { type:'choice', q:'はじめ、ぼくが あおいさんに 話しかけなかったのは なぜですか。',
+        choices:['あおいさんが こわかったから。','何を 言えば いいのか 分からなかったから。','本を 読むのが じゃまだと 思ったから。','あおいさんと けんかを していたから。'], ans:1,
+        paras:[0], evi:['p0s2'],
+        hints:['①のだん落を 読んでみよう。', '「話しかけたかったけれど」の あとに 注目しよう。'],
+        explain:'①に「何を言えばいいのか分からなかった」と書いてあるね。話しかけたい 気持ちは あったんだよ。' },
+      { type:'pick', q:'ぼくが あおいさんを たすけるために したことが 書かれている文を ぬき出しましょう。',
+        ans:['p1s2','p1s3'], paras:[1], evi:['p1s2','p1s3'],
+        hints:['②のだん落を 読んでみよう。', 'ぼくは 自分の「消しゴム」を どう したかな。'],
+        explain:'ぼくは 消しゴムを 半分に 切って、だまって あおいさんの つくえに おいたね。どちらの 文でも 正かいだよ。' },
+      { type:'choice', q:'「ぼくは顔が赤くなって、前を向いたまま」から、ぼくの どんな ようすが 分かりますか。',
+        choices:['おこっている。','かぜを ひいて、ねつが ある。','てれくさくて、はずかしい。','つまらなくて、あきている。'], ans:2,
+        paras:[2], evi:['p2s1'],
+        hints:['③のだん落を 読んでみよう。', '「ありがとう。」と 言われた すぐあとの ようすだよ。人は どんなとき 顔が 赤くなるかな。'],
+        explain:'お礼を 言われて、うれしいけれど はずかしくて、あおいさんの 顔を 見られなかったんだね。' },
+      { type:'write', q:'あおいさんが 小さな紙を おいたのは、どんな 気持ちからだと 思いますか。',
+        model:'消しゴムを かしてもらって うれしかったので、お礼を 言いたい、ぼくと なかよく なりたいという 気持ち。',
+        points:['お礼の 気持ち（ありがとう）が 書けている','なかよく なりたい（いっしょに 行きたい）気持ちが 書けている'],
+        paras:[3], evi:['p3s1'],
+        hints:['④のだん落で、紙に 書いてあった 言葉を 読んでみよう。', '「ありがとう」と「いっしょに 行かない？」から、二つの 気持ちを 考えよう。'] }
+    ]
+  },
+  nawatobi: {
+    title: '弟の なわとび', kind: '物語文', level: 'むずかしい',
+    paras: [
+      ['「お兄ちゃん、二重とびを教えて。」', '夕方、弟のはるとが、なわとびを持ってへやに来た。', 'ぼくはゲームのとちゅうだったので、「あとでね。」と言った。', 'はるとは、だまって外に出ていった。'],
+      ['しばらくして、まどの外から、なわが地面を打つ音が聞こえてきた。', 'ぴしっ、ぴしっ。', 'そのたびに、「あっ。」という小さな声がする。', 'ぼくはゲームの画面を見ているのに、少しも楽しくなかった。'],
+      ['外に出ると、はるとは足にひっかかったなわを、くやしそうに見ていた。', 'そのすがたを見て、ぼくは二年前の自分を思い出した。', '二重とびができなくて、毎日公園で一人でとんでいたころのことだ。', 'あのとき、ぼくはだれかに「がんばれ」と言ってほしかった。'],
+      ['「手首を、こうやって二回まわすんだよ。」', 'ぼくはなわをかりて、ゆっくりやって見せた。', 'はるとは、ぼくの手をじっと見て、何回もまねをした。', '空がオレンジ色になったころ、はじめてなわが二回、足の下を通った。'],
+      ['「できた！」', 'はるとが、とびはねながらこっちを見た。', 'ぼくは、自分ができたときよりも、うれしい気がした。', 'ゲームのつづきは、もうどうでもよくなっていた。']
+    ],
+    qs: [
+      { type:'choice', q:'ぼくが「ゲームの画面を見ているのに、少しも楽しくなかった」のは、なぜですか。',
+        choices:['ゲームが むずかしすぎたから。','外の 音が うるさかったから。','ことわった 弟の ことが 気になっていたから。','おなかが すいていたから。'], ans:2,
+        paras:[0,1], evi:['p0s2','p1s2'],
+        hints:['①と②のだん落を 読んでみよう。', 'まどの外から 聞こえてきたのは、だれの 声かな。ぼくは その前に 何と 言ったかな。'],
+        explain:'ぼくは「あとでね。」と ことわったね。そのあと 外から 弟の「あっ。」という声が 聞こえて、気になっていたんだね。' },
+      { type:'pick', q:'二年前の ぼくが、だれかに してほしかったことが 書かれている文を ぬき出しましょう。',
+        ans:['p2s3'], paras:[2], evi:['p2s3'],
+        hints:['③のだん落を 読んでみよう。', '「あのとき」で 始まる文に 注目しよう。'],
+        explain:'「あのとき、ぼくはだれかに『がんばれ』と言ってほしかった。」だね。だから 弟の 気持ちが よく分かったんだよ。' },
+      { type:'choice', q:'「空がオレンジ色になったころ」から、どんなことが 分かりますか。',
+        choices:['はるとが すぐに 二重とびが できたこと。','はるとが 長い 時間、あきらめずに 練習を つづけたこと。','雨が ふりそうに なったこと。','ぼくが ゲームに もどったこと。'], ans:1,
+        paras:[0,3], evi:['p0s1','p3s3'],
+        hints:['④のだん落の さいごの文を 読んでみよう。', '①のだん落では「いつ」の 話だったかな。空の 色が かわるまで、時間は どれくらい たったかな。'],
+        explain:'①では「夕方」だったのに、できたのは 空が オレンジ色に なったころ。時間の ながれから、はるとが あきらめずに 長く 練習したことが 分かるね。' },
+      { type:'write', q:'はじめと さいごで、弟に たいする ぼくの 気持ちは どのように 変わりましたか。',
+        model:'はじめは ゲームのほうが 大事で 弟の たのみを あとまわしにしたが、さいごは 弟が できたことを 自分のことより うれしく 思うように なった。',
+        points:['はじめの ようす（ゲームを えらんで ことわった）が 書けている','さいごの 気持ち（自分のことより うれしい）が 書けている'],
+        paras:[0,4], evi:['p0s2','p4s2','p4s3'],
+        hints:['①のだん落と ⑤のだん落を くらべてみよう。', '「はじめは〇〇だったが、さいごは△△になった。」の形で 書いてみよう。'] }
+    ]
+  },
+
+  /* ===== 説明文 ===== */
+  dango: {
+    title: 'ダンゴムシの ひみつ', kind: '説明文', level: 'やさしい',
+    paras: [
+      ['ダンゴムシは、石の下や落ち葉の下でよく見つかる生き物です。', 'さわると、くるんと丸くなります。', 'ダンゴムシは、どうして丸くなるのでしょうか。'],
+      ['それは、自分の体を守るためです。', 'ダンゴムシのせなかは、かたいからでおおわれています。', 'いっぽう、おなかの方はやわらかいです。', '丸くなると、やわらかいおなかがかくれて、かたいせなかだけが外に出ます。', 'こうして、てきから身を守っているのです。'],
+      ['ところで、ダンゴムシは「ムシ」という名前ですが、こん虫のなかまではありません。', 'じつは、エビやカニに近いなかまです。', 'あしの数も十四本あって、こん虫の六本よりずっと多いのです。'],
+      ['ダンゴムシは、落ち葉を食べて、小さなふんにして出します。', 'そのふんは、土をゆたかにします。', 'ダンゴムシは、小さいけれど、森や公園の土を作る大切な生き物なのです。']
+    ],
+    qs: [
+      { type:'choice', q:'ダンゴムシが 丸くなるのは、何の ためですか。',
+        choices:['ねむる ため。','自分の 体を 守る ため。','ころがって 早く うごく ため。','えさを さがす ため。'], ans:1,
+        paras:[1], evi:['p1s0'],
+        hints:['②のだん落を 読んでみよう。', '「それは」で 始まる文に、こたえが あるよ。'],
+        explain:'②の さいしょに「それは、自分の体を守るためです」と書いてあるね。①の 問いかけの こたえに なっているよ。' },
+      { type:'pick', q:'丸くなると 体が どうなるのかが 書かれている文を ぬき出しましょう。',
+        ans:['p1s3'], paras:[1], evi:['p1s3'],
+        hints:['②のだん落を 読んでみよう。', '「丸くなると」で 始まる文に 注目しよう。'],
+        explain:'「丸くなると、やわらかいおなかがかくれて、かたいせなかだけが外に出ます」だね。' },
+      { type:'choice', q:'ダンゴムシは、どんな 生き物に 近い なかまですか。',
+        choices:['エビや カニ','チョウや トンボ','カタツムリ','クモ'], ans:0,
+        paras:[2], evi:['p2s1'],
+        hints:['③のだん落を 読んでみよう。', '「じつは」の あとを 読んでみよう。'],
+        explain:'③に「じつは、エビやカニに近いなかまです」と書いてあるね。こん虫の なかまでは ないんだよ。' },
+      { type:'write', q:'筆者が、ダンゴムシを「大切な生き物」だと 言っているのは なぜですか。',
+        model:'落ち葉を 食べて 出した ふんが、土を ゆたかに するから。',
+        points:['落ち葉を 食べることが 書けている','ふんが 土を ゆたかにすることが 書けている'],
+        paras:[3], evi:['p3s0','p3s1'],
+        hints:['④のだん落を 読んでみよう。', 'ダンゴムシが 食べるものと、出した ふんが どうなるかを つなげて 書こう。'] }
+    ]
+  },
+  hige: {
+    title: 'ねこの ひげの はたらき', kind: '説明文', level: 'ふつう',
+    paras: [
+      ['ねこの顔には、長いひげが左右に生えています。', 'このひげは、ただのかざりではありません。', 'ねこにとって、とても大切なはたらきをしているのです。'],
+      ['一つ目のはたらきは、まわりのようすを感じとることです。', 'ひげの根もとには、ものにふれたことを感じるしくみがたくさんあります。', 'そのため、ねこはひげで、空気の小さな動きまで感じとれます。', '暗い夜でも、ものにぶつからずに歩けるのは、このためです。'],
+      ['二つ目のはたらきは、通れるはばをたしかめることです。', 'ねこは、せまいすき間に入る前に、ひげをそっと当てることがあります。', 'ひげがつかえるかどうかで、体が通れるかをたしかめていると考えられています。'],
+      ['三つ目は、気持ちをあらわすはたらきです。', 'きょうみがあるときは、ひげが前の方に向きます。', '反対に、こわいときは、ひげが顔にぴったりとつきます。'],
+      ['このように、ねこのひげには、感じる・はかる・つたえるという三つのはたらきがあります。', 'ですから、ねこのひげは、ぜったいに切ってはいけないのです。']
+    ],
+    qs: [
+      { type:'choice', q:'この文章には、ねこの ひげの はたらきが いくつ 書かれていますか。',
+        choices:['二つ','四つ','五つ','三つ'], ans:3,
+        paras:[1,2,3], evi:['p1s0','p2s0','p3s0','p4s0'],
+        hints:['②③④のだん落の 書き出しを 見てみよう。', '「一つ目」「二つ目」…という言葉を さがしてみよう。'],
+        explain:'「一つ目」「二つ目」「三つ目」と じゅん番に 書かれているね。⑤でも「三つのはたらき」と まとめているよ。' },
+      { type:'pick', q:'ねこが ひげで、どんな 小さなものまで 感じとれるのかが 書かれている文を ぬき出しましょう。',
+        ans:['p1s2'], paras:[1], evi:['p1s2'],
+        hints:['②のだん落を 読んでみよう。', '「感じとれます」で 終わる文を さがそう。'],
+        explain:'「ねこはひげで、空気の小さな動きまで感じとれます」だね。だから 暗くても ぶつからないんだよ。' },
+      { type:'choice', q:'ねこが こわいと 感じているとき、ひげは どう なりますか。',
+        choices:['前の 方に 向く。','顔に ぴったり つく。','上に ぴんと 立つ。','ぶるぶる ふるえる。'], ans:1,
+        paras:[3], evi:['p3s2'],
+        hints:['④のだん落を 読んでみよう。', '「こわいときは」の あとを 読んでみよう。'],
+        explain:'④に「こわいときは、ひげが顔にぴったりとつきます」と書いてあるね。前に 向くのは、きょうみが あるときだよ。' },
+      { type:'write', q:'筆者が「ねこのひげは、ぜったいに切ってはいけない」と 言っているのは なぜですか。',
+        model:'ひげには、まわりの ようすを 感じる、通れる はばを はかる、気持ちを つたえる という 大切な はたらきが あるから。',
+        points:['ひげに 大切な はたらきが あることが 書けている','はたらきを 一つ以上 くわしく 書けている'],
+        paras:[4], evi:['p4s0','p4s1'],
+        hints:['⑤のだん落を 読んでみよう。', '「ですから」の 前の文に、りゆうが 書いてあるよ。'] }
+    ]
+  },
+  tane: {
+    title: 'たねの 旅', kind: '説明文', level: 'むずかしい',
+    paras: [
+      ['植物は、動物のように自分で歩くことができません。', 'それなのに、道ばたや空き地など、いろいろな場所に同じなかまが生えています。', 'それは、植物がたねを遠くへ運ぶ工夫をしているからです。'],
+      ['一つ目は、風に運んでもらう方法です。', 'タンポポのたねには、白いわた毛がついています。', 'わた毛は、小さなパラシュートのように風を受けて、ふわふわと遠くまでとんでいきます。'],
+      ['二つ目は、動物に運んでもらう方法です。', 'オナモミの実には、先が曲がったとげがたくさんあります。', 'このとげが、動物の毛や人の服にひっかかります。', '動物が歩き回るうちに実が落ちて、はなれた場所で芽を出すのです。'],
+      ['三つ目は、水に運んでもらう方法です。', 'ヤシの実は、中に空気をふくんでいて、水にうきます。', '海に落ちた実は、なみに運ばれて、何か月もかけてほかの島にたどりつくこともあります。'],
+      ['もし、たねがすべて親の植物の真下に落ちたら、どうなるでしょうか。', 'せまい場所で、日光や水をうばい合うことになってしまいます。', 'たねが旅をするのは、新しい場所で元気に育つチャンスを広げるためなのです。']
+    ],
+    qs: [
+      { type:'choice', q:'タンポポの わた毛は、何に たとえられていますか。',
+        choices:['ふうせん','パラシュート','鳥の つばさ','ふね'], ans:1,
+        paras:[1], evi:['p1s2'],
+        hints:['②のだん落を 読んでみよう。', '「〜のように」という 言葉を さがしてみよう。'],
+        explain:'②に「小さなパラシュートのように風を受けて」と書いてあるね。「〜のように」は、たとえの 合図だよ。' },
+      { type:'pick', q:'オナモミの 実が、動物の 体に つく ようすが 書かれている文を ぬき出しましょう。',
+        ans:['p2s2'], paras:[2], evi:['p2s2'],
+        hints:['③のだん落を 読んでみよう。', '「ひっかかります」という 言葉に 注目しよう。'],
+        explain:'「このとげが、動物の毛や人の服にひっかかります」だね。とげが あるから くっつくんだよ。' },
+      { type:'choice', q:'ヤシの 実が 水に うくのは なぜですか。',
+        choices:['実が とても 小さいから。','わた毛が ついているから。','中に 空気を ふくんでいるから。','とげが あるから。'], ans:2,
+        paras:[3], evi:['p3s1'],
+        hints:['④のだん落を 読んでみよう。', '「水にうきます」の 前の 部分を 読んでみよう。'],
+        explain:'④に「中に空気をふくんでいて、水にうきます」と書いてあるね。わた毛は タンポポ、とげは オナモミの 工夫だよ。' },
+      { type:'write', q:'筆者は、たねが 旅を するのは 何のためだと 言っていますか。⑤の「もし〜」の 文も ヒントに して 書きましょう。',
+        model:'たねが ぜんぶ 親の 真下に 落ちると、日光や 水を うばい合って しまうので、新しい 場所で 元気に 育つ チャンスを 広げるため。',
+        points:['新しい 場所で 育つ チャンスを 広げるため、が 書けている','真下に 落ちると 日光や 水を うばい合う、という りゆうが 書けている'],
+        paras:[4], evi:['p4s1','p4s2'],
+        hints:['⑤のだん落を 読んでみよう。', '「〜のは、〜ためなのです」という 文に、筆者の 考えが 書いてあるよ。'] }
+    ]
+  }
+};
+
+function setMode(mode){
+  state.mode = mode;
+  var read = mode === 'read';
+  document.getElementById('paper').classList.toggle('read', read);
+  document.getElementById('reading').style.display = read ? 'block' : 'none';
+  document.getElementById('fig').style.display = read ? 'none' : '';
+  document.getElementById('qtext').style.display = read ? 'none' : '';
+  document.getElementById('mathPad').style.display = read ? 'none' : 'flex';
+  document.getElementById('readPad').style.display = read ? 'flex' : 'none';
+}
+
+function startReading(key){
+  var r = READS[key];
+  state.rkey = key; state.idx = 0; state.results = []; state.total = r.qs.length;
+  document.getElementById('wTitle').textContent = '読解：' + r.kind + '「' + r.title + '」';
+  setMode('read');
+  document.getElementById('rTitle').textContent = r.title;
+  document.getElementById('rKind').textContent = r.kind + '・' + r.level;
+  document.getElementById('passage').innerHTML = r.paras.map(function(ss, i){
+    return '<p class="para" id="para' + i + '"><span class="pno">' + NUMS[i] + '</span>' +
+      ss.map(function(t, j){ return '<span class="s" data-id="p' + i + 's' + j + '">' + t + '</span>'; }).join('') + '</p>';
+  }).join('');
+  go('work');
+  fitPassage();
+  strokes = []; redraw();
+  showRQ();
+}
+
+var LEVELS = { 'やさしい':1, 'ふつう':2, 'むずかしい':3 };
+function levelChip(r){ return '<span class="lv lv' + LEVELS[r.level] + '">' + r.level + '</span>'; }
+
+/* 文章が画面に おさまるように 文字の大きさを 調整（書くわくの分も ふくめて はかる） */
+function fitPassage(){
+  var rd = document.getElementById('reading'), ps = document.getElementById('passage'), wb = document.getElementById('writebox');
+  if (rd.style.display === 'none' || !rd.clientHeight) return;
+  var keep = wb.style.display;
+  wb.style.display = 'block';
+  for (var fs = 19; fs >= 15; fs--){
+    ps.style.setProperty('--fs', fs + 'px');
+    ps.style.setProperty('--lh', Math.round(fs * 1.79) + 'px');
+    if (rd.scrollHeight <= rd.clientHeight) break;
+  }
+  wb.style.display = keep;
+}
+
+function rq(){ return READS[state.rkey].qs[state.idx]; }
+
+function showRQ(){
+  var q = rq();
+  state.tries = 0; state.hints = 0; state.choice = null; state.pick = null; state.answered = false;
+  document.querySelectorAll('#passage .s').forEach(function(s){ s.classList.remove('evi','sel'); });
+  document.getElementById('rHintBox').innerHTML = '';
+  document.getElementById('rMsg').textContent = ''; document.getElementById('rMsg').className = 'msg';
+  document.getElementById('rExplain').innerHTML = '';
+  document.getElementById('maru').classList.remove('show');
+  document.getElementById('rqNo').textContent = 'もんだい ' + (state.idx+1) + ' / ' + state.total;
+  document.getElementById('rqText').textContent = q.q;
+  var body = document.getElementById('rqBody'); body.innerHTML = '';
+  if (q.type === 'choice'){
+    q.choices.forEach(function(c, i){
+      var b = document.createElement('button'); b.className = 'choice';
+      b.innerHTML = '<span class="k">' + KANA[i] + '</span><span>' + c + '</span>';
+      b.onclick = function(){
+        if (state.answered) return;
+        state.choice = i;
+        body.querySelectorAll('.choice').forEach(function(x){ x.classList.remove('on'); });
+        b.classList.add('on');
+      };
+      body.appendChild(b);
+    });
+  } else if (q.type === 'pick'){
+    body.innerHTML = '<div class="note">指（ゆび）の マークを えらんでから、文章の中の 文を タップしてね。</div>' +
+      '<div class="pickbox" id="pickbox">まだ えらんでいないよ</div>';
+  } else {
+    body.innerHTML = '<div class="note">文章の下の 点線の わくに、自分の言葉で 書こう。書けたら「書けた！」を おしてね。</div>';
+  }
+  document.getElementById('writebox').style.display = q.type === 'write' ? 'block' : 'none';
+  var pt = document.getElementById('pickTool');
+  pt.style.display = q.type === 'pick' ? 'flex' : 'none';
+  selectTool(q.type === 'pick' ? pt : document.querySelector('#tools .tool[data-tool="pen"]'));
+  var ck = document.getElementById('rCheck');
+  ck.style.display = ''; ck.textContent = q.type === 'write' ? '書けた！' : 'こたえあわせ';
+  document.getElementById('rHint').classList.remove('nudge');
+  updateRHint();
+  renderDots();
+  document.querySelector('.pad').scrollTop = 0;
+}
+
+function markEvidence(){
+  rq().evi.forEach(function(id){
+    var s = document.querySelector('#passage .s[data-id="' + id + '"]');
+    if (s) s.classList.add('evi');
+  });
+  document.querySelectorAll('#passage .s.sel').forEach(function(s){ s.classList.remove('sel'); });
+}
+
+function updateRHint(){
+  var b = document.getElementById('rHint');
+  b.style.display = state.answered ? 'none' : '';
+  b.classList.toggle('done', state.hints >= 2);
+  b.textContent = state.hints >= 2 ? 'ヒントは ここまで' : 'ヒント ' + (state.hints+1) + ' を見る';
+}
+
+function showRHint(){
+  if (state.hints >= 2 || state.answered) return;
+  var q = rq();
+  if (state.hints === 0){
+    q.paras.forEach(function(i){
+      var p = document.getElementById('para' + i);
+      p.classList.remove('flash'); void p.offsetWidth; p.classList.add('flash');
+    });
+  }
+  var d = document.createElement('div'); d.className = 'hintcard';
+  d.innerHTML = '<b>ヒント ' + (state.hints+1) + '</b>' + q.hints[state.hints];
+  document.getElementById('rHintBox').appendChild(d);
+  state.hints++;
+  updateRHint();
+}
+
+function nextButton(){
+  var b = document.createElement('button'); b.className = 'nextq';
+  b.textContent = state.idx + 1 >= state.total ? 'けっかを 見る' : 'つぎの もんだいへ';
+  b.onclick = nextRQ;
+  return b;
+}
+
+function finishQuestion(){
+  state.answered = true;
+  document.getElementById('rCheck').style.display = 'none';
+  selectTool(document.querySelector('#tools .tool[data-tool="pen"]'));
+  document.getElementById('pickTool').style.display = 'none';
+  updateRHint();
+}
+
+function readCheck(){
+  var q = rq(), msg = document.getElementById('rMsg');
+  if (state.answered) return;
+  if (q.type === 'write'){ showModel(); return; }
+  var picked = q.type === 'choice' ? state.choice : state.pick;
+  if (picked == null){ msg.className = 'msg ng'; msg.textContent = q.type === 'choice' ? 'こたえを えらんでね' : '文章の中から 文を えらんでね'; return; }
+  var ok = q.type === 'choice' ? picked === q.ans : q.ans.indexOf(picked) >= 0;
+  state.tries++;
+  if (ok){
+    state.results.push(state.tries === 1);
+    finishQuestion(); markEvidence(); msg.textContent = '';
+    showMaru(state.tries === 1 ? 'よくできました！' : 'できたね！', 'りゆうを 見る', showReason);
+    return;
+  }
+  msg.className = 'msg ng';
+  msg.innerHTML = 'おしい！ もういちど 文章を 読んでみよう。';
+  if (state.hints < 2){
+    msg.innerHTML += '<br>こまったら ヒントを 見てね。';
+    var hb = document.getElementById('rHint');
+    hb.classList.remove('nudge'); void hb.offsetWidth; hb.classList.add('nudge');
+  } else if (state.tries >= 2){
+    var b = document.createElement('button'); b.textContent = 'こたえを 見る';
+    b.onclick = function(){
+      state.results.push(false);
+      finishQuestion(); markEvidence();
+      msg.className = 'msg';
+      msg.textContent = q.type === 'choice' ? 'こたえは「' + KANA[q.ans] + '」だよ。' : 'こたえは、色が ついた 文だよ。';
+      showReason();
+    };
+    msg.appendChild(document.createElement('br')); msg.appendChild(b);
+  }
+}
+
+function showReason(){
+  document.getElementById('maru').classList.remove('show');
+  renderDots();
+  var ex = document.getElementById('rExplain');
+  ex.innerHTML = '<div class="explain"><b>こたえの りゆう</b>' + rq().explain + '<br><small>文章の 色が ついたところが、こたえの 手がかりだよ。</small></div>';
+  ex.appendChild(nextButton());
+  ex.scrollIntoView({ behavior:'smooth', block:'end' });
+}
+
+function showModel(){
+  var q = rq(), ex = document.getElementById('rExplain');
+  finishQuestion(); markEvidence();
+  ex.innerHTML = '<div class="model"><b>おてほんの こたえ</b>' + q.model + '</div>' +
+    '<div class="points"><b>ここが 書けていたら はなまる</b><ul>' + q.points.map(function(p){ return '<li>' + p + '</li>'; }).join('') + '</ul></div>' +
+    '<div class="note">自分の こたえと くらべて、えらんでね。</div>' +
+    '<div class="selfrow"><button class="ok" id="selfOk">はなまる！</button><button id="selfNg">もう少し</button></div>';
+  ex.scrollIntoView({ behavior:'smooth', block:'end' });
+  document.getElementById('selfOk').onclick = function(){
+    state.results.push(true);
+    showMaru('よく書けました！', state.idx + 1 >= state.total ? 'けっかを 見る' : 'つぎへ', nextRQ);
+  };
+  document.getElementById('selfNg').onclick = function(){
+    state.results.push(false); renderDots();
+    ex.innerHTML = '<div class="explain"><b>つぎに 書くときの コツ</b>文章の 色が ついたところを 使うと、書きやすく なるよ。おてほんを 見ながら、もういちど 書いてみても いいね。</div>';
+    ex.appendChild(nextButton());
+  };
+}
+
+function nextRQ(){
+  document.getElementById('maru').classList.remove('show');
+  state.idx++;
+  if (state.idx >= state.total){ finish(); return; }
+  showRQ();
+}
+
+document.getElementById('passage').addEventListener('click', function(e){
+  if (tool.tool !== 'pick' || state.answered || rq().type !== 'pick') return;
+  var s = e.target.closest('.s'); if (!s) return;
+  state.pick = s.dataset.id;
+  document.querySelectorAll('#passage .s.sel').forEach(function(x){ x.classList.remove('sel'); });
+  s.classList.add('sel');
+  document.getElementById('pickbox').textContent = s.textContent;
+});
+document.getElementById('rCheck').onclick = readCheck;
+document.getElementById('rHint').onclick = showRHint;
 
 renderGrades();
 buildKeys();
