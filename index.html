@@ -161,6 +161,26 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
 .selfrow button{flex:1;height:50px;border-radius:12px;font-size:17px;font-weight:700;border:1.5px solid var(--line2);background:#fff}
 .selfrow .ok{background:var(--red);border-color:var(--red);color:#fff}
 .nextq{height:50px;border-radius:14px;background:var(--red);color:#fff;font-size:18px;font-weight:700}
+/* kanji */
+#kanji{position:absolute;inset:0;padding:22px 24px 90px;display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px;--kb:112px}
+.ktag{position:absolute;left:16px;top:12px}
+.ksent{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:center;font-family:"Klee One",serif;font-size:32px;line-height:1.35;max-width:100%}
+.kw{display:inline-flex;flex-direction:column;align-items:center;margin:0 4px}
+.kw .furi{font-size:18px;color:var(--sub);letter-spacing:2px;line-height:1.4}
+.kboxes{display:flex}
+.kbox{position:relative;width:var(--kb);height:var(--kb);border:2.5px solid #C9A76B;background:#fff}
+.kbox+.kbox{border-left:none}
+.kbox::before,.kbox::after{content:"";position:absolute;border:0 dashed #E2CFA8}
+.kbox::before{left:50%;top:0;bottom:0;border-left-width:1.5px}
+.kbox::after{top:50%;left:0;right:0;border-top-width:1.5px}
+.kbox .g{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:"Klee One",serif;font-size:calc(var(--kb)*.78);color:rgba(58,53,48,.17);opacity:0;transition:opacity .25s;pointer-events:none}
+.kbox.flash .g{color:var(--ink);opacity:1}
+.kbox.trace .g{opacity:1}
+.kbox.model .g{opacity:1;color:var(--red)}
+.kread{color:var(--ink);font-size:1.25em;border-bottom:3px solid var(--red);padding:0 2px;margin:0 2px}
+.kmodel{display:none;align-items:flex-end;gap:12px;font-family:"Klee One",serif}
+.kmodel b{font-family:"Zen Maru Gothic";font-size:14px;color:var(--red);padding-bottom:6px}
+.bigk{font-family:"Klee One",serif;font-size:56px;line-height:1.2;color:var(--red);text-align:center}
 @media (max-width:900px), (orientation:portrait){
   .main{flex-direction:column}
   .pad{width:auto;border-left:none;border-top:1px solid var(--line2);max-height:42vh}
@@ -208,6 +228,11 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
         <div class="rtitle"><h2 id="rTitle"></h2><span class="chip" id="rKind"></span></div>
         <div id="passage"></div>
         <div class="writebox" id="writebox"><span>ここに こたえを 書こう</span></div>
+      </div>
+      <div id="kanji">
+        <span class="chip ktag" id="kTag"></span>
+        <div class="ksent" id="kSent"></div>
+        <div class="kmodel" id="kModel"></div>
       </div>
       <canvas id="cv"></canvas>
       <div class="qtext" id="qtext"></div>
@@ -323,7 +348,7 @@ var UNITS = {
 
 var TOC = [
   { subject:'さんすう', color:'#2F8F6B', units:['div1','div1r','div2','rect','lshape'] },
-  { subject:'こくご', color:'#B5651D', reads:['tamago','story','tonari','nawatobi','dango','expl','hige','tane'], soon:['4年生の かん字'] },
+  { subject:'こくご', color:'#B5651D', reads:['tamago','story','tonari','nawatobi','dango','expl','hige','tane'], kanji:['k1','k2'], soon:['4年生の かん字 ③〜（のこり 162字）'] },
   { subject:'えいご', color:'#2B6CB0', soon:['アルファベット', 'たんご'] }
 ];
 
@@ -373,6 +398,15 @@ function openToc(){
         (best != null ? '<span class="done">はなまる ' + best + '/' + r.qs.length + '</span>' : '') +
         '<span class="no">p.' + (no++) + '</span>';
       b.onclick = function(){ startReading(key); };
+      box.appendChild(b);
+    });
+    (sec.kanji || []).forEach(function(key){
+      var g = KANJI[key], b = document.createElement('button'); b.className = 'unit';
+      var best = saved.best['kanji_' + key];
+      b.innerHTML = '<span>' + g.name + '（' + g.items[0][0] + '〜' + g.items[g.items.length-1][0] + '）</span><span class="lead"></span>' +
+        (best != null ? '<span class="done">はなまる ' + best + '/' + SET_SIZE + '</span>' : '') +
+        '<span class="no">p.' + (no++) + '</span>';
+      b.onclick = function(){ startKanji(key); };
       box.appendChild(b);
     });
     (sec.soon || []).forEach(function(name){
@@ -616,10 +650,10 @@ function nextProblem(){
   if (state.idx >= SET_SIZE){ finish(); return; }
   showProblem();
 }
-function restart(){ if (state.mode === 'read') startReading(state.rkey); else startUnit(state.unit); }
+function restart(){ if (state.mode === 'read') startReading(state.rkey); else if (state.mode === 'kanji') startKanji(state.kkey); else startUnit(state.unit); }
 function finish(){
   var n = state.results.filter(Boolean).length, T = state.total;
-  var key = state.mode === 'read' ? 'read_' + state.rkey : state.unit;
+  var key = state.mode === 'read' ? 'read_' + state.rkey : state.mode === 'kanji' ? 'kanji_' + state.kkey : state.unit;
   var prev = saved.best[key];
   if (prev == null || n > prev){ saved.best[key] = n; save(); }
   document.getElementById('score').textContent = n + ' / ' + T;
@@ -639,6 +673,7 @@ function resizeCanvas(){
   cv.width = Math.round(r.width*dpr); cv.height = Math.round(r.height*dpr);
   ctx.setTransform(dpr,0,0,dpr,0,0);
   if (state.mode === 'read') fitPassage();
+  if (state.mode === 'kanji') fitKanji();
   redraw();
   if (state.mode === 'math' && state.unit && UNITS[state.unit].kind === 'div' && document.getElementById('work').classList.contains('show')) drawDivision(cur());
 }
@@ -968,13 +1003,15 @@ var READS = {
 
 function setMode(mode){
   state.mode = mode;
-  var read = mode === 'read';
-  document.getElementById('paper').classList.toggle('read', read);
+  var read = mode === 'read', kj = mode === 'kanji', side = read || kj;
+  document.getElementById('paper').classList.toggle('read', side);
   document.getElementById('reading').style.display = read ? 'block' : 'none';
-  document.getElementById('fig').style.display = read ? 'none' : '';
-  document.getElementById('qtext').style.display = read ? 'none' : '';
-  document.getElementById('mathPad').style.display = read ? 'none' : 'flex';
-  document.getElementById('readPad').style.display = read ? 'flex' : 'none';
+  document.getElementById('kanji').style.display = kj ? 'flex' : 'none';
+  document.getElementById('fig').style.display = side ? 'none' : '';
+  document.getElementById('qtext').style.display = side ? 'none' : '';
+  document.getElementById('mathPad').style.display = side ? 'none' : 'flex';
+  document.getElementById('readPad').style.display = side ? 'flex' : 'none';
+  if (!read) document.getElementById('pickTool').style.display = 'none';
 }
 
 function startReading(key){
@@ -1176,8 +1213,255 @@ document.getElementById('passage').addEventListener('click', function(e){
   s.classList.add('sel');
   document.getElementById('pickbox').textContent = s.textContent;
 });
-document.getElementById('rCheck').onclick = readCheck;
-document.getElementById('rHint').onclick = showRHint;
+document.getElementById('rCheck').onclick = function(){ if (state.mode === 'kanji') kanjiCheck(); else readCheck(); };
+document.getElementById('rHint').onclick = function(){ if (state.mode === 'kanji') kanjiHint(); else showRHint(); };
+
+/* ---------- 国語：4年生の かん字 ----------
+   1字ごとに ['かん字', '例文', '例文'...]。例文の {かん字|よみ} がこたえの部分。
+   送りがなは {かん字|よみ|おくりがな} と書く（例：{覚|おぼ|える|かくえる,さえる,おもえる}）。
+   文の中の ほかの漢字は、なるべく3年生までに習う字にする。 */
+var KANJI = {
+  k1: { name:'4年生の かん字 ①', items:[
+    ['愛', 'ペットの 犬を {愛|あい|する|えいする,あいずる,まなする}。', '{愛用|あいよう}の ふでばこを つかう。'],
+    ['案', 'クラスで いい {案|あん}が 出た。', '先生が 学校の 中を {案内|あんない}する。'],
+    ['以', '三人{以上|いじょう}で あそぼう。', '十さい{以下|いか}は ただで 入れる。'],
+    ['衣', 'あらった {衣服|いふく}を たたむ。', 'えびフライの {衣|ころも}が さくさくだ。'],
+    ['位', 'かけっこで {一位|いちい}に なった。', 'つくえの {位置|いち}を そろえる。'],
+    ['茨', '{茨城|いばらき}県は 関東地方に ある。'],
+    ['印', '地図に {印|しるし}を つける。', 'プリントを {印刷|いんさつ}する。'],
+    ['英', '{英語|えいご}の 歌を うたう。', '{英会話|えいかいわ}を ならう。'],
+    ['栄', '港の 町が {栄|さか|える|えいえる,さがえる,さかる}。', '{栄養|えいよう}の ある 食べもの。'],
+    ['媛', '{愛媛|えひめ}県は みかんが 有名だ。'],
+    ['塩', 'スープに {塩|しお}を 入れる。', '{食塩|しょくえん}を 水に とかす。'],
+    ['岡', '{岡山|おかやま}県で ももを 食べた。', '{静岡|しずおか}県から 富士山が 見える。'],
+    ['億', '日本には {一億|いちおく}人 以上が 住んでいる。', '空には 何{億|おく}もの 星が ある。'],
+    ['加', 'ぼくも なかまに {加|くわ|わる|かわる,ぐわわる,くわる}。', 'マラソン大会に {参加|さんか}する。'],
+    ['果', '{果物|くだもの}を 切って 食べる。', 'テストの {結果|けっか}が 出た。'],
+    ['貨', '古い {金貨|きんか}を 見つけた。', '長い {貨物|かもつ}列車が 通る。'],
+    ['課', '夏休みの {課題|かだい}を 終わらせる。', '朝の さんぽが {日課|にっか}だ。'],
+    ['芽', 'あさがおの {芽|め}が 出た。', 'たねが {発芽|はつが}する。'],
+    ['賀', '{年賀|ねんが}じょうを 書く。', '{佐賀|さが}県の のりを 食べた。'],
+    ['改', 'クラスの ルールを {改|あらた|める|かいめる,あたらめる,あらたる}。', '駅の {改札|かいさつ}を 通る。']
+  ]},
+  k2: { name:'4年生の かん字 ②', items:[
+    ['械', '工場の {機械|きかい}が 動く。', '{器械|きかい}体そうの 練習を する。'],
+    ['害', '畑の {害虫|がいちゅう}を ふせぐ。', '大雨で {水害|すいがい}が おきた。'],
+    ['街', '夜の {街|まち}が 明るい。', '{商店街|しょうてんがい}で 買いものを する。'],
+    ['各', '{各地|かくち}で 雨が ふる。', 'おべんとうは {各自|かくじ}で 用意する。'],
+    ['覚', '九九を ぜんぶ {覚|おぼ|える|かくえる,さえる,おもえる}。', '朝 早く 目が {覚|さ|める|おぼめる,かくめる,さとめる}。'],
+    ['潟', '{新潟|にいがた}県は お米が 有名だ。'],
+    ['完', 'ジグソーパズルが {完成|かんせい}した。', 'やくそくを {完全|かんぜん}に わすれていた。'],
+    ['官', '大きく なったら {外交官|がいこうかん}に なりたい。', '自動車学校の {教官|きょうかん}に 教わる。'],
+    ['管', '寒くて {水道管|すいどうかん}が こおった。', '図書室の 本を {管理|かんり}する。'],
+    ['関', 'ぼくには {関係|かんけい}の ない 話だ。', '{関西|かんさい}の 大阪に 行く。'],
+    ['観', 'メダカの {観察|かんさつ}日記を つける。', '京都は {観光|かんこう}客が 多い。'],
+    ['願', '七夕に {願|ねが|い|がんい,ねかい,ねがえ}ごとを 書く。', '流れ星に {願|ねが|う|がんう,ねかう,ねらう}。'],
+    ['岐', '{岐阜|ぎふ}県は 中部地方に ある。'],
+    ['希', '{希望|きぼう}の 学校に 入る。', '{希少|きしょう}な 生き物を 守る。'],
+    ['季', '日本には {四季|しき}が ある。', '{季節|きせつ}が 秋に かわる。'],
+    ['旗', '運動会で {国旗|こっき}を かざる。', '{旗|はた}を ふって おうえんする。'],
+    ['器', '{楽器|がっき}を えんそうする。', 'ごはんの あとで {食器|しょっき}を あらう。'],
+    ['機', '{飛行機|ひこうき}に のって 旅行する。', '話す {機会|きかい}が ふえた。'],
+    ['議', '学級{会議|かいぎ}で 話し合う。', 'じゃんけんで {議長|ぎちょう}を きめる。'],
+    ['求', '友だちに 助けを {求|もと|める|きゅうめる,もどめる,とめる}。']
+  ]}
+};
+
+function kparse(s){
+  var m = s.match(/\{([^|}]+)\|([^|}]+)(?:\|([^|}]*))?(?:\|([^}]+))?\}/);
+  return { pre:s.slice(0, m.index), w:m[1], y:m[2], ok:m[3] || '', d:m[4] ? m[4].split(',') : null, post:s.slice(m.index + m[0].length) };
+}
+function shuffle(a){ for (var i=a.length-1; i>0; i--){ var j = rnd(0,i), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+var DA = 'かきくけこさしすせそたちつてとはひふへほ', DB = 'がぎぐげござじずぜぞだぢづでどばびぶべぼ';
+
+/* 読みの まちがい選択しを 自動で作る */
+function kChoices(p, item){
+  var right = p.y + p.ok, near = [], pool = [], wide = [];
+  if (p.d){ var fixed = shuffle(p.d.concat([right])); return { list: fixed, ans: fixed.indexOf(right) }; }
+  item.slice(1).forEach(function(s){ var q = kparse(s); if (q.y !== p.y) near.push(q.y + p.ok); });
+  var f = p.y[0], i = DA.indexOf(f), j = DB.indexOf(f);
+  if (i >= 0) near.push(DB[i] + p.y.slice(1) + p.ok); else if (j >= 0) near.push(DA[j] + p.y.slice(1) + p.ok);
+  if (/[ょゅ]う/.test(p.y)) near.push(p.y.replace(/([ょゅ])う/, '$1') + p.ok);
+  else if (/[ょゅ]/.test(p.y)) near.push(p.y.replace(/([ょゅ])/, '$1う') + p.ok);
+  if (/っ/.test(p.y)) near.push(p.y.replace('っ', 'つ') + p.ok);
+  Object.keys(KANJI).forEach(function(g){ KANJI[g].items.forEach(function(it){ it.slice(1).forEach(function(s){
+    var q = kparse(s);
+    if (q.ok === p.ok && q.y.length === p.y.length) pool.push(q.y + p.ok);
+    else if (q.ok === p.ok) wide.push(q.y + p.ok);
+  }); }); });
+  var cand = shuffle(near).slice(0, 2).concat(shuffle(pool), shuffle(wide)), out = [];
+  cand.forEach(function(c){ if (out.length < 3 && c && c !== right && out.indexOf(c) < 0) out.push(c); });
+  var all = shuffle(out.concat([right]));
+  return { list: all, ans: all.indexOf(right) };
+}
+
+function startKanji(key){
+  var g = KANJI[key];
+  state.kkey = key; state.idx = 0; state.results = []; state.total = SET_SIZE;
+  var types = ['yomi','kaki','yomi','kaki','kaki'];
+  state.list = shuffle(g.items.slice()).slice(0, SET_SIZE).map(function(item, n){
+    var p = kparse(item[rnd(1, item.length-1)]);
+    p.item = item; p.type = types[n];
+    if (p.type === 'yomi'){ var c = kChoices(p, item); p.choices = c.list; p.ans = c.ans; }
+    return p;
+  });
+  document.getElementById('wTitle').textContent = g.name;
+  setMode('kanji');
+  go('work');
+  showKQ();
+}
+function kq(){ return state.list[state.idx]; }
+
+function kBoxes(w, cls){
+  return '<span class="kboxes">' + w.split('').map(function(c){ return '<span class="kbox' + (cls ? ' ' + cls : '') + '"><span class="g">' + c + '</span></span>'; }).join('') + '</span>';
+}
+function kChars(t){ return t.split('').map(function(c){ return '<span>' + (c === ' ' ? '&nbsp;' : c) + '</span>'; }).join(''); }
+
+function showKQ(){
+  var q = kq(), yomi = q.type === 'yomi';
+  state.tries = 0; state.hints = 0; state.choice = null; state.answered = false;
+  ['rHintBox','rExplain'].forEach(function(id){ document.getElementById(id).innerHTML = ''; });
+  var msg = document.getElementById('rMsg'); msg.textContent = ''; msg.className = 'msg';
+  document.getElementById('maru').classList.remove('show');
+  document.getElementById('rqNo').textContent = 'もんだい ' + (state.idx+1) + ' / ' + state.total;
+  document.getElementById('kTag').textContent = yomi ? '読み' : '書き';
+  document.getElementById('kSent').innerHTML = kChars(q.pre) +
+    (yomi ? '<span class="kread">' + q.w + '</span>'
+          : '<span class="kw"><span class="furi">' + q.y + '</span>' + kBoxes(q.w) + '</span>') +
+    kChars(q.ok + q.post);
+  var km = document.getElementById('kModel'); km.style.display = 'none'; km.innerHTML = '';
+  var body = document.getElementById('rqBody'); body.innerHTML = '';
+  if (yomi){
+    document.getElementById('rqText').textContent = '線の ところの かん字の 読みを えらびましょう。';
+    q.choices.forEach(function(c, i){
+      var b = document.createElement('button'); b.className = 'choice';
+      b.innerHTML = '<span class="k">' + KANA[i] + '</span><span>' + c + '</span>';
+      b.onclick = function(){
+        if (state.answered) return;
+        state.choice = i;
+        body.querySelectorAll('.choice').forEach(function(x){ x.classList.remove('on'); });
+        b.classList.add('on');
+      };
+      body.appendChild(b);
+    });
+  } else {
+    document.getElementById('rqText').textContent = 'わくに 入る かん字を 書きましょう。';
+    body.innerHTML = '<div class="note">わくの 中に ていねいに 書こう。書けたら「書けた！」を おしてね。</div>';
+  }
+  var ck = document.getElementById('rCheck');
+  ck.style.display = ''; ck.textContent = yomi ? 'こたえあわせ' : '書けた！';
+  document.getElementById('rHint').classList.remove('nudge');
+  strokes = []; redraw();
+  selectTool(document.querySelector('#tools .tool[data-tool="pen"]'));
+  updateRHint(); renderDots(); fitKanji();
+  document.querySelector('.pad').scrollTop = 0;
+}
+
+/* わくの大きさを 画面に 合わせる */
+function fitKanji(){
+  var el = document.getElementById('kanji');
+  if (el.style.display === 'none' || !el.clientHeight || !state.list.length) return;
+  var q = kq(), n = q.w.length;
+  var H = el.clientHeight - 112, W = el.clientWidth - 48;
+  var kb = Math.max(60, Math.min(112, Math.floor((H - 110) / 2), Math.floor(W / (n + 2))));
+  el.style.setProperty('--kb', kb + 'px');
+}
+
+function kanjiHint(){
+  if (state.hints >= 2 || state.answered) return;
+  var q = kq(), h;
+  if (q.type === 'yomi'){
+    var r = q.choices[q.ans];
+    h = state.hints === 0 ? 'こたえは ひらがな ' + r.length + '文字だよ。' : 'さいしょの 字は「' + r[0] + '」だよ。';
+  } else if (state.hints === 0){
+    h = 'わくの 中に かん字が 少しだけ 見えるよ。よく 見てね！';
+    var bs = document.querySelectorAll('#kSent .kbox');
+    bs.forEach(function(b){ b.classList.add('flash'); });
+    setTimeout(function(){ bs.forEach(function(b){ b.classList.remove('flash'); }); }, 1300);
+  } else {
+    h = 'うすく 出したよ。なぞって 書いてみよう。';
+    document.querySelectorAll('#kSent .kbox').forEach(function(b){ b.classList.add('trace'); });
+  }
+  var d = document.createElement('div'); d.className = 'hintcard';
+  d.innerHTML = '<b>ヒント ' + (state.hints+1) + '</b>' + h;
+  document.getElementById('rHintBox').appendChild(d);
+  state.hints++;
+  updateRHint();
+}
+
+function kExplain(){
+  var q = kq(), words = q.item.slice(1).map(function(s){ var p = kparse(s); return p.w + p.ok + '（' + p.y + p.ok + '）'; });
+  return '<div class="explain"><b>おぼえよう</b><div class="bigk">' + q.item[0] + '</div>「' + q.item[0] + '」を つかう ことば：<br>' + words.join('・') + '</div>';
+}
+function kNextButton(){
+  var b = document.createElement('button'); b.className = 'nextq';
+  b.textContent = state.idx + 1 >= state.total ? 'けっかを 見る' : 'つぎの もんだいへ';
+  b.onclick = nextKQ;
+  return b;
+}
+
+function kanjiCheck(){
+  var q = kq(), msg = document.getElementById('rMsg'), ex = document.getElementById('rExplain');
+  if (state.answered) return;
+  if (q.type === 'kaki'){
+    if (!strokes.length){ msg.className = 'msg ng'; msg.textContent = 'わくの 中に 書いてから おしてね'; return; }
+    showKModel(); return;
+  }
+  if (state.choice == null){ msg.className = 'msg ng'; msg.textContent = 'こたえを えらんでね'; return; }
+  state.tries++;
+  if (state.choice === q.ans){
+    state.results.push(state.tries === 1);
+    finishQuestion(); msg.textContent = '';
+    ex.innerHTML = kExplain();
+    showMaru(state.tries === 1 ? 'よくできました！' : 'できたね！', state.idx + 1 >= state.total ? 'けっかを 見る' : 'つぎへ', nextKQ);
+    return;
+  }
+  msg.className = 'msg ng';
+  msg.innerHTML = 'おしい！ もういちど 考えてみよう。';
+  if (state.hints < 2){
+    msg.innerHTML += '<br>こまったら ヒントを 見てね。';
+    var hb = document.getElementById('rHint');
+    hb.classList.remove('nudge'); void hb.offsetWidth; hb.classList.add('nudge');
+  } else if (state.tries >= 2){
+    var b = document.createElement('button'); b.textContent = 'こたえを 見る';
+    b.onclick = function(){
+      state.results.push(false); renderDots();
+      finishQuestion();
+      msg.className = 'msg';
+      msg.textContent = 'こたえは「' + KANA[q.ans] + '　' + q.choices[q.ans] + '」だよ。';
+      ex.innerHTML = kExplain(); ex.appendChild(kNextButton());
+    };
+    msg.appendChild(document.createElement('br')); msg.appendChild(b);
+  }
+}
+
+function showKModel(){
+  var q = kq(), ex = document.getElementById('rExplain'), km = document.getElementById('kModel');
+  finishQuestion();
+  km.innerHTML = '<b>おてほん</b>' + kBoxes(q.w, 'model');
+  km.style.display = 'flex';
+  ex.innerHTML = kExplain() +
+    '<div class="points"><b>見くらべよう</b><ul><li>とめ・はね・はらいまで 同じかな</li><li>形や 大きさの バランスは どうかな</li></ul></div>' +
+    '<div class="note">自分の 字と おてほんを くらべて、えらんでね。</div>' +
+    '<div class="selfrow"><button class="ok" id="kOk">はなまる！</button><button id="kNg">もう少し</button></div>';
+  document.getElementById('kOk').onclick = function(){
+    state.results.push(true);
+    showMaru('よく書けました！', state.idx + 1 >= state.total ? 'けっかを 見る' : 'つぎへ', nextKQ);
+  };
+  document.getElementById('kNg').onclick = function(){
+    state.results.push(false); renderDots();
+    ex.innerHTML = '<div class="explain"><b>つぎに 書くときの コツ</b>おてほんを 見ながら、ノートに もう2回 書いてみよう。書いて おぼえるのが いちばんの 近道だよ。</div>';
+    ex.appendChild(kNextButton());
+  };
+  ex.scrollIntoView({ behavior:'smooth', block:'end' });
+}
+
+function nextKQ(){
+  document.getElementById('maru').classList.remove('show');
+  state.idx++;
+  if (state.idx >= state.total){ finish(); return; }
+  showKQ();
+}
 
 renderGrades();
 buildKeys();
